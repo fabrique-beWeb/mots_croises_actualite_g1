@@ -4,6 +4,8 @@ class Grille {
   const LONGUEUR_MOT_MIN= 1;//longueur minimum des mots
   const LONGUEUR_MOT_MAX = 10;//longueur max des mots
   const TAILLE_GRILLE = 100;//taille grille
+  const NB_CASE_NOIR_MIN = 10;
+  const NB_CASE_NOIR_MAX = 14;
 
 
   private $taille;//longueur du coté de la grille
@@ -59,6 +61,10 @@ public function getListeMot($end=' '){
 public function getNbMots() {
   return count($this->listmot);
 }
+
+
+
+
 public function init(){
 
   //Crée une nouvelle grille
@@ -83,7 +89,18 @@ public function init(){
 //       $start,-1,rand(0,3),''(rand(0,1)==1)
 //     );
 //     $inc=1;
+  private function getCaseNoir($remplis) {
+    $black = new CaseNoir(
+      $start,-1,'');
+      $inc=1;
+      $placement=rand(self::NB_CASE_NOIR_MIN,$this->label);
+      while($this->label!==empty($remplis)) {
+        $black->setStart($black->getStart()-1);
+        break;
+      }
 
+
+  }
 
   private function placerMot($start) {
 
@@ -118,7 +135,7 @@ public function init(){
           break;
       }
     }
-     
+
 
     private function COL($x) {
         // IN : (int $x) = index de la case
@@ -141,12 +158,40 @@ public function init(){
 
             }
 
-                  } 
+                  }
                   return $this->motgrille[]=$motsfinit;
        }
-       
+       public function addRendus(){
 
-       // $rqtxt='SELECT word FROM words WHERE LENGTH(word)='.$len.' ORDER BY RANDOM() LIMIT 1';
-        //return $this->_db->querySingle($rqtxt);
+         $r.='<style type="text/css">
+                table.gridtable {
+                    font-family: verdana,arial,sans-serif;
+                    font-size:16px;
+                    color:#333333;
+                    border-width: 1px;
+                    border-color: #666666;
+                    border-collapse: collapse;
+                    }
+                table.gridtable, td {
+                    border-width: 0px;
+                    padding: 8px;
+                    border-style: solid;
+                    border-color: #666666;
+                    background-color: #ffffff;
+                    }
+                </style>'.PHP_EOL;
+            $r.='<table class="gridtable">'.PHP_EOL;
+            foreach($this->case as $lettre) {
+                if($cpt==0) {$r.='<tr>';}
+                if($lettre=='') {$r.='<td>'.chr(rand(65,100)).'</td>';}
+                else {$r.='<td>'.$lettre.'</td>';}
+                $cpt++;
+                if($cpt==$this->taille) {$r.='</tr>'.PHP_EOL; $cpt=0;}
+                }
+            $r.='</table>'.PHP_EOL;
+            var_dump($r);
+
+       }
+
+
         }
-

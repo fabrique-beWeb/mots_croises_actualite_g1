@@ -11,6 +11,9 @@ class Mot {
     private $label; // intitulé du mot
     private $start; // index de la case de départ
     private $fin; // index de la case d'arrivée
+    private $rendus;
+
+
 
    public function construct($start,$fin,$orientation,$label) {
         $this->start=$start;
@@ -18,6 +21,8 @@ class Mot {
         $this->orientation=$orientation;
         $this->label=$label;
         }
+
+//setter
 
    public function setStart($start) {
         $this->start=$start;
@@ -31,7 +36,11 @@ class Mot {
         $this->label=$label;
         }
 
+   public function setRendus($rendus) {
+       $this->r=$rendus;
+   }     
 
+//getter
    public function getStart() {
         return $this->start;
         }
@@ -49,6 +58,10 @@ class Mot {
    public function getOrientation() {
         return $this->orientation;
         }
+    
+    public function getRendus() {
+        return $this->r;
+    }
 
    }
 ?>
