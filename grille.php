@@ -1,17 +1,17 @@
 <?php
 
 class Grille {
-  const LONGUEUR_MOT_MIN= 1;
-  const LONGUEUR_MOT_MAX = 10;
-  const TAILLE_GRILLE = 100;
+  const LONGUEUR_MOT_MIN= 1;//longueur minimum des mots
+  const LONGUEUR_MOT_MAX = 10;//longueur max des mots
+  const TAILLE_GRILLE = 100;//taille grille
 
 
-  private $taille;
-  private $case;
-  private $listmot;
-  private $tableauCOL;
-  private $fichiermot;
-  private $msgerror;
+  private $taille;//longueur du coté de la grille
+  private $case;//case de la grille contenant une lettre
+  public $listmot;//liste des mots à trouver
+  private $tableauCOL;//tableau des numéros des colonnes avec les index
+  private $fichiermot;//fichier contenant les mots
+  private $msgerror;//string contenant le message d'erreur
 
   public function __construct($taille=self::TAILLE_GRILLE) {
     $this->msgerror='';
@@ -25,10 +25,10 @@ class Grille {
       $this->listmot=array();
       $this->case=array_fill(0,$this->taille*$this->taille,'');
       $this->fichiermot=fopen('ListeMots.txt','r+');
-
-      $this->tableau=array();
+      //index des colonnes dans 2 grilles verticalement pour éviter que sa dépasse
+      $this->tableauCOL=array();
       for ($i=0; $i<(2*$this->taille*$this->taille); $i++) {
-        $this->tableau[$i]=self::tableau($i);
+        $this->tableauCOL[$i]=self::COL($i);
       }
 
   }
@@ -36,18 +36,17 @@ public function __destruct(){
   if($this->msgerror!='') {
     return;
   }
-  $this->fichiermot->close();
+//  $this->fichiermot->close();
 }
-public function getListeMots($end='  '){
+public function getListeMot($end=' '){
+  //Retourne la liste des mots à trouver dans la grille par ordre alphabétique
+  //$end: séparateur de mots définis
   if($this->msgerror='') {
     return;
   }
-  $arrCOL=array();
-  foreach($this->listmot as $mot) {
+  $arr=array();
+  foreach($arr as $mot) {
     $label=$mot->getLabel();
-      if($mot->isReversed()){
-        $label=strrev($label);
-      }
       $arr[]=$label;
   }
     sort($arr);
@@ -61,12 +60,14 @@ public function getNbMots() {
   return count($this->listmot);
 }
 public function init(){
+
+  //Crée une nouvelle grille
   if($this->msgerror!='') {
     return;
   }
   $taille2=$this->taille*$this->taille;
-  $i=rand(0,$taille2-1);
-
+  $i=rand(0,$taille2-1);//on part d'une case au hasard
+  //on parcourt toutes les cases
   $cpt=0;
   while($cpt<$taille2) {
     $this->placeWord($i);
@@ -75,27 +76,33 @@ public function init(){
     if($i==$taille2){}
       $i=0;
     }
-  }
+  }//génération de la grille
 
-public function CaseNoir($case){
-    $casen=new case(
-      $start,-1,rand(0,3),''(rand(0,1)==1)
-    );
-    $inc=1;
+// public function CaseNoir($case){
+//     $casen=new case(
+//       $start,-1,rand(0,3),''(rand(0,1)==1)
+//     );
+//     $inc=1;
 
 
   private function placerMot($start) {
+
+    //Place les mots dans la case de départ $start, de manière random à la vertical ou à l'horizontal
+    //nouveau mot, case de départ qu'on appelle $start
     $mot = new Mot(
-      $start,-1,rand(0,3),'',(rand(0,1)==1)
-      );
-      $inc=1;
-      $longueur=rand(self::LONGUEUR_MOT_MIN,$this->taille);
+      $start,//index de la case de départ
+      -1,//fin suivant l'orientation et la longueur du mot
+      rand(0,3),//orientation
+      '');//libellé tiré au dernier moment
+      $inc=1;//incrémentation
+      $longueur=rand(self::LONGUEUR_MOT_MIN,$this->taille);//longueur d'un mot au hasard, de LONGUEUR_MOT_MIN à taille
 
       switch($mot->setOrientation()){
         case Mot::HORIZONTAL:
           $inc=1;
           $mot->setEnd($mot->getStart()+$longueur-1);
-          while($this->tableau[$mot->getEnd()]<$this->tableau[$mot->getStart()]) {
+          //si le mot est placé sur 2 lignes on décale à gauche
+          while($this->tableauCOL[$mot->getEnd()]<$this->tableauCOL[$mot->getStart()]) {
             $mot->setStart($mot->getStart()-1);
           }
           break;
@@ -103,39 +110,43 @@ public function CaseNoir($case){
           case Mot::VERTICAL:
           $inc=$this->taille;
           $mot->setEnd($mot->getStart()+($longueur*$this->taille)-$this->taille);
+          //si le mot dépasse de la grille en bas, on décale vers le haut
           while($mot->getEnd()>($this->taille*$this->taille)-1) {
             $mot->setStart($mot->getStart()-$this->taille);
             $mot->setEnd($mot->getStart()+($longueur*$this->taille)-$this->taille);
           }
           break;
       }
-      $s='';
-      $flag=false;
-      for ($i=$mot->getStart();$i<$mot->getEnd();$i+=$inc) {
-        if($this->case[$i]=='') {
-          $s.='_';}
-          else {
-            $s.=$this->case[$i];
-            $flag=true;
-          }
+    }
+     
+
+    private function COL($x) {
+        // IN : (int $x) = index de la case
+        // OUT : (int) numéro de la colonne, de 1 à $this->_size
+        return ($x % $this->taille)+1;
         }
-        if(!$flag){
-          $mot->setLabel($this->getMotRandom($longueur));
-          if($mot->isReversed()){
-            $mot->setLabel(strrev($mot->getLabel()));
-          }
-          else{
-            if(strpos($s,'_')===false) {
-              return;
+
+    private function getRandomMot($longueur) {
+        // IN (Int) : longueur du mot $len
+        // OUT (String) : un mot au hasard de longueur $len
+       foreach ($fichiermot as $motgrille) {
+         if($this->motgrille == $longueur) {
+          $this->motgrille=array();
+            for($i=0;;$i++){
+              if($i>$longueur) {
+                break;
+              }
             }
 
-            $word->setLabel($this->getMotComme($s));
-            $mot>setReverse(false);
 
-            $this->addMot($mot);
-          }
+            }
+
+                  } 
+                  return $this->motgrille[]=$motsfinit;
+       }
+       
+
+       // $rqtxt='SELECT word FROM words WHERE LENGTH(word)='.$len.' ORDER BY RANDOM() LIMIT 1';
+        //return $this->_db->querySingle($rqtxt);
         }
 
-      }
-
-  }
